@@ -14,9 +14,11 @@
             "ArtinCMS\\LHS\\": "src/"
         },
         "files": [
-            "src/Helpers/Functions/helpers.php"
         ]
 
+    },
+    "require": {
+        "hashids/hashids": "^3.0"
     },
     "extra": {
         "laravel": {

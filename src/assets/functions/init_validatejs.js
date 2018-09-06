@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------------------------------------------------------------------------//
-function checkUsername(str) {
-    //console.log(str);
+function validate_func_check_username(str) {
     var error = "";
     var illegalChars = /\W/; // allow letters, numbers, and underscores
 
@@ -19,7 +18,7 @@ function checkUsername(str) {
     return error;
 }
 
-function checkCodeMelli(code) {
+function validate_func_check_code_melli(code) {
     if (!/^\d{10}$/.test(code)
         || code == '0000000000'
         || code == '1111111111'
@@ -42,14 +41,13 @@ function checkCodeMelli(code) {
     return (sum < 2 && check == sum) || (sum >= 2 && check + sum == 11);
 }
 
-function checkMobileNumber(mobile_number) {
+function validate_func_check_iran_mobile_number(mobile_number) {
     if (/^09[0-9]{9}$/.test(mobile_number))
         return true;
     return false;
-
 }
 
-function check_national_id(code) {
+function validate_func_check_national_id(code) {
     var L = code.length;
 
     if (L < 11 || parseInt(code, 10) == 0) return false;
@@ -68,8 +66,7 @@ function check_national_id(code) {
 }
 
 validate.validators.username = function (value, options, key, attributes) {
-    //console.log('asdasdasdasd');
-    var res = checkUsername(value);
+    var res = validate_func_check_username(value);
     if (res == "") {
         return null;
     }
@@ -115,8 +112,7 @@ validate.validators.only_numbers = function (value, options, key, attributes) {
 
 validate.validators.national_id = function (value, options, key, attributes) {
     if (value != null) {
-        //console.log('sss:',check_national_id(value),value);
-        if (check_national_id(value)) {
+        if (validate_func_check_national_id(value)) {
             return null;
         }
         return options.message;
@@ -125,8 +121,7 @@ validate.validators.national_id = function (value, options, key, attributes) {
 
 validate.validators.codeMelli = function (value, options, key, attributes) {
     if (value != null) {
-        //console.log('sss:',check_national_id(value),value);
-        if (checkCodeMelli(value)) {
+        if (validate_func_check_code_melli(value)) {
             return null;
         }
         return options.message;
@@ -135,8 +130,7 @@ validate.validators.codeMelli = function (value, options, key, attributes) {
 
 validate.validators.iranMobileNumber = function (value, options, key, attributes) {
     if (value != null) {
-        //console.log('sss:',check_national_id(value),value);
-        if (checkMobileNumber(value)) {
+        if (validate_func_check_iran_mobile_number(value)) {
             return null;
         }
         return options.message;
@@ -272,25 +266,34 @@ function init_validatejs(form, constraints, function_name, selector_loader_area,
             //console.log(inputs.item(i).type);
 
             $('#' + inputs.item(i).name).on('select2:unselect', function (e) {
+                unformat_all_elements_autoNumeric();
                 var errors = validate(form, constraints) || {};
-                showErrors(form, errors || {});
+                //showErrors(form, errors || {});
+                showErrorsForInput(this, errors[this.name]);
+                reformat_all_elements_autoNumeric();
             });
 
             $('#' + inputs.item(i).name).on('select2:select', function (e) {
+                unformat_all_elements_autoNumeric();
                 var errors = validate(form, constraints) || {};
-                showErrors(form, errors || {});
+                //showErrors(form, errors || {});
+                showErrorsForInput(this, errors[this.name]);
+                reformat_all_elements_autoNumeric();
             });
 
         }
         inputs.item(i).addEventListener("focusout", function (ev) {
+            unformat_all_elements_autoNumeric();
             var errors = validate(form, constraints) || {};
             showErrorsForInput(this, errors[this.name]);
+            reformat_all_elements_autoNumeric();
         });
     }
 }
 
 function handleFormSubmit(form, constraints, function_name, submit_value, selector_loader_area, console_log) {
     // validate the form aainst the constraints
+    unformat_all_elements_autoNumeric();
     var errors = validate(form, constraints);
     if (console_log) {
         console.log(errors);
@@ -298,9 +301,10 @@ function handleFormSubmit(form, constraints, function_name, submit_value, select
     // then we update the form to reflect the results
     showErrors(form, errors || {});
     if (!errors) {
-        $(selector_loader_area).append(generate_loader_html('لطفا منتظر بمانید...'));
+        $(selector_loader_area).append(init_loader_html('لطفا منتظر بمانید...'));
         function_name(form, submit_value);
     } else {
+        reformat_all_elements_autoNumeric();
     }
 }
 
