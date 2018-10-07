@@ -311,7 +311,7 @@ function handleFormSubmit(form, constraints, function_name, submit_value, select
 // Updates the inputs with the validation errors
 function showErrors(form, errors) {
     // We loop through all the inputs and show the errors for that input
-    _.each(form.querySelectorAll("input[name], select[name], textarea[name]"), function (input) {
+    _.each(form.querySelectorAll(".form-group input[name],.form-group select[name],.form-group textarea[name]"), function (input) {
         // Since the errors can be null if no errors were found we need to handle
         // that
         showErrorsForInput(input, errors && errors[input.name]);
