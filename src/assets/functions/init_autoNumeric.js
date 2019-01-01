@@ -6,18 +6,18 @@ function init_autoNumeric(selector, variable_name, Options) {
 
     selector = selector || '.number_with_separator';
     Options = Options || {
-            modifyValueOnWheel: false,
-            maximumValue: '9999999999999.99999',
-            leadingZero: 'deny',
-            decimalPlaces: '0',
-            digitGroupSeparator: ',',
-            decimalCharacter: '.',
-            decimalCharacterAlternative: ',',
-            //currencySymbol: 'ريال',
-            unformatOnSubmit: true,
-            currencySymbolPlacement: AutoNumeric.options.currencySymbolPlacement.suffix,
-            roundingMethod: 'U'
-        };
+        modifyValueOnWheel: false,
+        maximumValue: '9999999999999.99999',
+        leadingZero: 'deny',
+        decimalPlaces: '0',
+        digitGroupSeparator: ',',
+        decimalCharacter: '.',
+        decimalCharacterAlternative: ',',
+        //currencySymbol: 'ريال',
+        unformatOnSubmit: true,
+        currencySymbolPlacement: AutoNumeric.options.currencySymbolPlacement.suffix,
+        roundingMethod: 'U'
+    };
     $(selector).addClass('text-left ltr');
     $(function () {
         window['number_with_separator_inputs'][variable_name] = new AutoNumeric.multiple(selector, Options);

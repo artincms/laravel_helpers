@@ -9,6 +9,8 @@ function clear_form_elements(selector) {
                 $(this).val('').trigger('change');
             case 'text':
                 $(this).val('');
+            case 'number':
+                $(this).val('');
             case 'textarea':
                 $(this).val('');
                 break;

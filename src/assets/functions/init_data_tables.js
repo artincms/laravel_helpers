@@ -1,4 +1,4 @@
-var CommonDom_DataTables = '<"datatable-header"fl><"datatable-scroll"t><"datatable-footer"ip>';
+var CommonDom_DataTables = '<"datatable_custom_proccessing" r><"datatable-header"fl><"datatable-scroll"t ><"datatable-footer"ip>';
 var LangJson_DataTables = {
     "decimal": "",
     "emptyTable": "هیچ داده ای در جدول وجود ندارد",
