@@ -38,7 +38,7 @@ $.extend($.fn.dataTable.defaults, {
     }
 });
 
-function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initComplete, scrollX, scrollY, scrollCollapse, orderBy, orderByDesc, row_select,fixedColumns,start_item) {
+function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initComplete, scrollX, scrollY, scrollCollapse, orderBy, orderByDesc, row_select, fixedColumns, start_item) {
     scrollX = scrollX || false;
     scrollY = scrollY || false;
     scrollCollapse = scrollCollapse || false;
@@ -46,19 +46,21 @@ function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initCo
     orderByDesc = orderByDesc || "desc";
     more_data = more_data || {};
     row_select = row_select || false;
-    start_item = start_item || 0 ;
-    fixedColumns = fixedColumns || false ;
+    start_item = start_item || 0;
+    fixedColumns = fixedColumns || false;
     var columnDefs = [];
     window[var_grid_name + '_rows_selected'] = [];
+    var select_all_class = var_grid_name + '_select_all';
+    var select_one_class = var_grid_name + '_select_one';
     if (row_select) {
         checkbox_column = {
-            title: '<input name="select_all" value="1" type="checkbox"/>',
+            title: '<input class="' + select_all_class + '" value="1" type="checkbox"/>',
             searchable: false,
             orderable: false,
             width: '1%',
             className: 'dt-body-center',
             render: function (data, type, full, meta) {
-                return '<input type="checkbox">';
+                return '<input class="' + select_one_class + '" type="checkbox">';
             }
         };
         columns.unshift(checkbox_column);
@@ -84,7 +86,7 @@ function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initCo
                     });
                 }
             },
-            displayStart:start_item,
+            displayStart: start_item,
             fixedColumns: fixedColumns,
             ajax: {
                 url: url,
@@ -95,12 +97,12 @@ function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initCo
             scrollX: scrollX,
             scrollY: scrollY,
             scrollCollapse: scrollCollapse,
-            order: [[ orderBy, orderByDesc ]],
+            order: [[orderBy, orderByDesc]],
             rowCallback: function (row, data, dataIndex) {
                 if (row_select) {
                     var rowId = data;
                     if (func_search_in_obj('id', data['id'], window[var_grid_name + '_rows_selected'])) {
-                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                        $(row).find('.' + select_one_class).prop('checked', true);
                         $(row).addClass('selected');
                     }
                 }
@@ -108,54 +110,78 @@ function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initCo
             destroy: true,
         };
 
-    if(!scrollY)
-    {
-        delete  dataTableOptionObj.scrollY;
-        delete  dataTableOptionObj.scrollCollapse;
+    if (!scrollY) {
+        delete dataTableOptionObj.scrollY;
+        delete dataTableOptionObj.scrollCollapse;
     }
 
     window[var_grid_name] = $(selector).DataTable(dataTableOptionObj);
 
     if (row_select) {
-        $(selector).on('click', 'input[type="checkbox"]', function (e) {
+        $(document).on('click', '.' + select_one_class, function (e) {
+
             var $row = $(this).closest('tr');
+            var clicked_row_number = $row.data('dt-row');
+            if (fixedColumns) {
+                var fixed_scrolled_rows = $(selector + '_wrapper .dataTables_scrollBody tr');
+                var $fixed_scrolled_rows = $(fixed_scrolled_rows[clicked_row_number + 1]);
+                var fixed_right_rows = $(selector + '_wrapper .DTFC_RightBodyWrapper tr');
+                var $fixed_right_rows = $(fixed_right_rows[clicked_row_number + 1]);
+            }
+
             // Get row data
             var data = window[var_grid_name].row($row).data();
-            // Get row ID
-            //var rowId = data['id'];
-            var rowId = data;
-            // Determine whether row ID is in the list of selected row IDs
-            var index = $.inArray(rowId, window[var_grid_name + '_rows_selected']);
+            // Determine whether row data is in the list of selected row datas
+            var index = $.inArray(data, window[var_grid_name + '_rows_selected']);
             // If checkbox is checked and row ID is not in list of selected row IDs
             if (this.checked && index === -1) {
-                window[var_grid_name + '_rows_selected'].push(rowId);
+                window[var_grid_name + '_rows_selected'].push(data);
                 // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
             } else if (!this.checked && index !== -1) {
                 window[var_grid_name + '_rows_selected'].splice(index, 1);
             }
             if (this.checked) {
                 $row.addClass('selected');
+                if (fixedColumns) {
+                    $fixed_scrolled_rows.addClass('selected');
+                    $fixed_right_rows.addClass('selected');
+                }
             } else {
                 $row.removeClass('selected');
+                if (fixedColumns) {
+                    $fixed_scrolled_rows.removeClass('selected');
+                    $fixed_right_rows.removeClass('selected');
+                }
             }
             // Update state of "Select all" control
-            updateDataTableSelectAllCtrl(window[var_grid_name]);
+            updateDataTableSelectAllCtrl(window[var_grid_name], select_one_class, select_all_class,fixedColumns);
             // Prevent click event from propagating to parent
             e.stopPropagation();
         });
 
         // Handle click on table cells with checkboxes
-        $(selector).on('click', 'tbody td, thead th:first-child', function (e) {
-            $(this).parent().find('input[type="checkbox"]').trigger('click');
-        });
+        // $(selector).on('click', 'tbody td, thead th:first-child', function (e) {
+        //     $(this).parent().find('.'+select_one_class).trigger('click');
+        // });
 
         // Handle click on "Select all" control
-        $('thead input[name="select_all"]', window[var_grid_name].table().container()).on('click', function (e) {
-            if (this.checked) {
-                $(selector + ' tbody input[type="checkbox"]:not(:checked)').trigger('click');
-            } else {
-                $(selector + ' tbody input[type="checkbox"]:checked').trigger('click');
+        $(document).on('click', '.' + select_all_class, function (e) {
+            if (fixedColumns) {
+                if (this.checked) {
+                    $('.DTFC_LeftBodyWrapper .' + select_one_class + ':not(:checked)').trigger('click');
+                } else {
+                    $('.DTFC_LeftBodyWrapper .' + select_one_class + ':checked').trigger('click');
+                }
             }
+            else
+            {
+                if (this.checked) {
+                    $('.' + select_one_class + ':not(:checked)').trigger('click');
+                } else {
+                    $('.' + select_one_class + ':checked').trigger('click');
+                }
+            }
+
 
             // Prevent click event from propagating to parent
             e.stopPropagation();
@@ -164,34 +190,38 @@ function dataTablesGrid(selector, var_grid_name, url, columns, more_data, initCo
         // Handle table draw event
         window[var_grid_name].on('draw', function () {
             // Update state of "Select all" control
-            updateDataTableSelectAllCtrl(window[var_grid_name]);
+            setTimeout(function () {
+                updateDataTableSelectAllCtrl(window[var_grid_name], select_one_class, select_all_class,fixedColumns);
+            },500)
         });
     }
 }
 
-function updateDataTableSelectAllCtrl(table) {
-    var $table = table.table().node();
-    var $chkbox_all = $('tbody input[type="checkbox"]', $table);
-    var $chkbox_checked = $('tbody input[type="checkbox"]:checked', $table);
-    var chkbox_select_all = $('thead input[name="select_all"]', $table).get(0);
+function updateDataTableSelectAllCtrl(table, select_one_class, select_all_class,fixedColumns) {
 
+    if (fixedColumns)
+    {
+        window.$chkbox_all = $('.DTFC_LeftBodyWrapper  .' + select_one_class);
+        window.$chkbox_checked = $('.DTFC_LeftBodyWrapper  .' + select_one_class + ':checked');
+    }
+    else
+    {
+        window.$chkbox_all = $('.' + select_one_class);
+        window.$chkbox_checked = $('.' + select_one_class + ':checked');
+    }
+    window.chkbox_select_all = $('.' + select_all_class);
     // If none of the checkboxes are checked
     if ($chkbox_checked.length === 0) {
-        chkbox_select_all.checked = false;
-        if ('indeterminate' in chkbox_select_all) {
-            chkbox_select_all.indeterminate = false;
-        }
+        chkbox_select_all.prop('checked', false);
+        chkbox_select_all.prop("indeterminate", false);
         // If all of the checkboxes are checked
     } else if ($chkbox_checked.length === $chkbox_all.length) {
-        chkbox_select_all.checked = true;
-        if ('indeterminate' in chkbox_select_all) {
-            chkbox_select_all.indeterminate = false;
-        }
+        chkbox_select_all.prop('checked', true);
+        chkbox_select_all.prop("indeterminate", false);
+
         // If some of the checkboxes are checked
     } else {
-        chkbox_select_all.checked = true;
-        if ('indeterminate' in chkbox_select_all) {
-            chkbox_select_all.indeterminate = true;
-        }
+        chkbox_select_all.prop('checked', false);
+        chkbox_select_all.prop("indeterminate", true);
     }
 }
