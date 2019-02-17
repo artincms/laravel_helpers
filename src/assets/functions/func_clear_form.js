@@ -4,20 +4,15 @@ function clear_form_elements(selector) {
         switch (this.type) {
             case 'password':
             case 'select-multiple':
-                $(this).val('').trigger('change');
             case 'select-one':
-                $(this).val('').trigger('change');
             case 'text':
-                $(this).val('');
             case 'number':
-                $(this).val('');
             case 'textarea':
-                $(this).val('');
+                $(this).val('').trigger('change');
                 break;
             case 'checkbox':
             case 'radio':
                 this.checked = false;
         }
     });
-
 }
