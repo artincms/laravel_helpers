@@ -48,7 +48,15 @@ $(document).on('click', '.jsPanelsV4', function (e) {
     var $this = $(this);
     var modal = $this.data('modal') || false;
     var variableName = $this.data('variable_name') || 'jsPanelVariable' + Math.random().toString(30).substr(2, 12);
-    var container = $this.data('container') || $('body');
+    var container_eval = eval($this.data('container_eval'))|| false;
+    if (container_eval)
+    {
+        var container = eval($this.data('container'))|| $('body');
+    }
+    else
+    {
+        var container = $this.data('container')|| $('body');
+    }
     var theme = $this.data('theme') || 'info';
     var position = $this.data('position') || 'center';
     var z_index = $this.data('z_index') || 10000000;
